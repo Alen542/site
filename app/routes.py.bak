@@ -1,0 +1,130 @@
+import os
+import requests
+from flask import current_app as app, render_template, redirect, url_for, jsonify, request, session
+from .ptero_api import api_req, console_logs, current_stats
+
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '1234')
+
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            if request.path.startswith('/api/'):
+                return jsonify({"error": "Unauthorized"}), 401
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form.get('password') == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('dashboard'))
+        return render_template('login.html', error="Invalid Password!")
+    return render_template('login.html', error=None)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
+@app.route('/')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/files')
+@login_required
+def files():
+    return render_template('files.html')
+
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html')
+
+# --- APIS FOR FRONTEND ---
+@app.route('/api/stats')
+@login_required
+def stats():
+    return jsonify(current_stats)
+
+@app.route('/api/logs')
+@login_required
+def logs():
+    return jsonify({"logs": console_logs})
+
+@app.route('/api/power', methods=['POST'])
+@login_required
+def power():
+    action = request.json.get('action')
+    api_req('POST', '/power', {"signal": action})
+    return jsonify({"success": True})
+
+@app.route('/api/command', methods=['POST'])
+@login_required
+def send_cmd():
+    cmd = request.json.get('command')
+    res = api_req('POST', '/command', {"command": cmd})
+    if res.status_code == 204: return jsonify({"success": True})
+    return jsonify({"error": res.text}), 400
+
+@app.route('/api/files/list')
+@login_required
+def list_files():
+    d = request.args.get('dir', '/')
+    res = api_req('GET', '/files/list', params={'directory': d})
+    return jsonify(res.json() if res.status_code == 200 else {"error": res.text})
+
+@app.route('/api/files/content', methods=['GET', 'POST'])
+@login_required
+def file_content():
+    file_path = request.args.get('file')
+    if request.method == 'GET':
+        res = api_req('GET', '/files/contents', params={'file': file_path})
+        return res.text if res.status_code == 200 else "Error loading file"
+    else:
+        content = request.data.decode('utf-8')
+        res = requests.post(
+            f"{os.getenv('PANEL_URL')}/api/client/servers/{os.getenv('SERVER_ID')}/files/write", 
+            headers={"Authorization": f"Bearer {os.getenv('CLIENT_API_KEY')}", "Content-Type": "text/plain"},
+            params={"file": file_path}, 
+            data=content.encode('utf-8')
+        )
+        return jsonify({"success": res.status_code in [200, 204]})
+
+@app.route('/api/files/action', methods=['POST'])
+@login_required
+def file_action():
+    data = request.json
+    action = data.get('action')
+    res = None
+    if action == 'create-folder':
+        res = api_req('POST', '/files/create-folder', {"root": data['root'], "name": data['name']})
+    elif action == 'delete':
+        res = api_req('POST', '/files/delete', {"root": data['root'], "files": data['files']})
+    
+    if res:
+        return jsonify({"success": res.status_code in [200, 204, 202], "error": res.text if res.status_code not in [200, 204, 202] else None})
+    return jsonify({"error": "Invalid action"}), 400
+    
+@app.route('/api/activity')
+@login_required
+def activity():
+    res = api_req('GET', '/activity')
+    return jsonify(res.json() if res.status_code == 200 else {"error": res.text})
+    
+@app.route('/api/startup', methods=['GET', 'PUT'])
+@login_required
+def handle_startup():
+    if request.method == 'GET':
+        res = api_req('GET', '/startup')
+        return jsonify(res.json() if res.status_code == 200 else {"error": res.text})
+    else:
+        data = request.json
+        res = api_req('PUT', '/startup/variable', {"key": data['key'], "value": data['value']})
+        return jsonify({"success": res.status_code == 200, "error": res.text if res.status_code != 200 else None})
+
+

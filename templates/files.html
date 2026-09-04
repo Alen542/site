@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Storage Core{% endblock %}
+{% block content %}
+<div class="bento-card" style="margin-bottom: 25px; padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; border-radius: 12px; background: rgba(30, 30, 36, 0.4); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+    <!-- Top Row -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <div id="breadcrumb-container" class="breadcrumb-container">
+            <!-- Rendered by JS -->
+        </div>
+        <button class="btn-refresh" onclick="loadFiles(currentDir)"><i class="fas fa-redo-alt"></i> <span class="hide-mobile">Refresh</span></button>
+    </div>
+    
+    <!-- Divider -->
+    <div style="height: 1px; background: rgba(255,255,255,0.08); width: 100%;"></div>
+    
+    <!-- Bottom Row -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div class="search-wrapper" style="flex: 1; min-width: 200px;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="file-search" class="search-input-modern" placeholder="Search files in current folder..." onkeyup="filterFiles(this.value)" style="width: 100%;">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button class="btn-ss btn-create-folder" onclick="createFolder()"><i class="fas fa-folder-plus" style="color: #bbb;"></i> <span class="hide-mobile">Create Folder</span></button>
+            <button class="btn-ss btn-new-file" onclick="createNewFile()"><i class="fas fa-file-alt" style="color: var(--purple-primary);"></i> <span class="hide-mobile">New File</span></button>
+            <button class="btn-ss btn-upload" onclick="showToast('Upload', 'Upload functionality coming soon!', 'info')"><i class="fas fa-upload"></i> <span class="hide-mobile">Upload</span></button>
+        </div>
+    </div>
+</div>
+
+<div class="bento-card files-card" style="padding: 10px;">
+    <table class="list-table">
+        <thead>
+            <tr>
+                <th style="padding-left: 63px;">File Name</th>
+                <th style="width: 120px;" class="hide-mobile">Size</th>
+                <th style="width: 200px;" class="hide-mobile">Last Modified</th>
+                <th style="width: 80px; text-align: right; padding-right: 30px;"></th>
+            </tr>
+        </thead>
+        <tbody id="file-tbody">
+            <tr><td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 40px;">Scanning storage array...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Editor Overlay -->
+<div id="editor-overlay" style="display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(8px); justify-content: center; align-items: center;">
+    <div class="bento-card terminal-card" style="width: 85%; max-width: 1200px; height: 85vh; box-shadow: 0 30px 60px rgba(0,0,0,1);">
+        <div class="terminal-header">
+            <div style="font-size: 15px; font-weight: 600; color: white;" id="editor-title">Editing File</div>
+            <div>
+                <button class="btn-action" style="margin-right: 15px; background: #27272a; border:none;" onclick="document.getElementById('editor-overlay').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="btn-action" style="background: var(--purple-primary); color: white; border:none;" onclick="saveFile()"><i class="fas fa-save"></i></button>
+            </div>
+        </div>
+        <textarea id="file-content" style="flex: 1; background: #050505; color: #f4f4f5; border: none; padding: 25px; font-family: 'JetBrains Mono'; font-size: 15px; outline: none; resize: none; line-height: 1.6;" spellcheck="false"></textarea>
+    </div>
+</div>
+
+<!-- Custom Prompt Modal -->
+<div id="custom-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div class="bento-card" style="width: 90%; max-width: 400px; padding: 25px; animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <h3 id="prompt-title" style="color: white; font-size: 20px; margin-bottom: 15px; font-weight: 600; font-family: 'Outfit';">Title</h3>
+        <input type="text" id="prompt-input" style="background: #111; border: 1px solid var(--border-color, #333); color: white; padding: 12px 16px; border-radius: 8px; font-family: 'Outfit'; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; margin-bottom: 25px;" autocomplete="off">
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-modern" onclick="document.getElementById('custom-prompt-modal').style.display='none'">Cancel</button>
+            <button class="btn-modern primary" id="prompt-submit">Confirm</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/files.js?v=2"></script>
+{% endblock %}
+
+

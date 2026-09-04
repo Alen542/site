@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="bento-grid">
+    <!-- Status Widget -->
+    <div class="bento-card col-span-1">
+        <div class="stat-header">
+            <div class="stat-title">Network Status</div>
+            <i class="fas fa-satellite-dish stat-icon"></i>
+        </div>
+        <div class="stat-value" id="status-text" style="font-size: 28px;">...</div>
+    </div>
+    
+    <!-- CPU Widget -->
+    <div class="bento-card col-span-1">
+        <div class="stat-header">
+            <div class="stat-title">Processor</div>
+            <i class="fas fa-microchip stat-icon"></i>
+        </div>
+        <div class="stat-value"><span id="cpu-val">0</span><span style="font-size: 18px; color: var(--text-secondary);">%</span></div>
+    </div>
+    
+    <!-- RAM Widget -->
+    <div class="bento-card col-span-1">
+        <div class="stat-header">
+            <div class="stat-title">Memory Allocation</div>
+            <i class="fas fa-memory stat-icon"></i>
+        </div>
+        <div class="stat-value"><span id="ram-val">0</span><span style="font-size: 18px; color: var(--text-secondary);"> MB</span></div>
+    </div>
+    
+    <!-- Power Widget -->
+    <div class="bento-card col-span-1" style="padding: 20px;">
+        <div class="power-group">
+            <button class="btn-power btn-start" onclick="powerAction('start')"><i class="fas fa-play"></i> Start</button>
+            <button class="btn-power btn-restart" onclick="powerAction('restart')"><i class="fas fa-redo"></i> Restart</button>
+            <button class="btn-power btn-stop" onclick="powerAction('stop')"><i class="fas fa-stop"></i> Stop</button>
+        </div>
+    </div>
+
+    <!-- Terminal Widget -->
+    <div class="bento-card terminal-card col-span-4">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <div class="dot dot-r"></div>
+                <div class="dot dot-y"></div>
+                <div class="dot dot-g"></div>
+            </div>
+            <div style="font-size: 12px; color: #666; font-family: 'JetBrains Mono';">root@wakanda-core:~</div>
+        </div>
+        <div class="terminal-body" id="terminal">
+            Initializing secure connection...
+        </div>
+        <form id="cmd-form" class="terminal-input-group">
+            <span style="color: #a855f7; margin-right: 15px; font-family: 'JetBrains Mono'; font-weight: bold; font-size: 16px;">$</span>
+            <input type="text" id="cmd-input" class="terminal-input" placeholder="Execute command..." autocomplete="off">
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js?v=2"></script>
+{% endblock %}
+
+
+
+

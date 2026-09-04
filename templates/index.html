@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pterodactyl Ultimate Control</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f4f9; padding-bottom: 50px; }
+        .nav-tabs .nav-link { font-weight: bold; color: #555; }
+        .nav-tabs .nav-link.active { color: #0d6efd; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #ddd; }
+        .status-running { color: green; font-weight: bold; }
+        .status-offline { color: red; font-weight: bold; }
+        .status-starting { color: orange; font-weight: bold; }
+        .file-list { max-height: 400px; overflow-y: auto; }
+        .clickable { cursor: pointer; color: #0d6efd; }
+        .clickable:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">Ultimate Control Panel</span>
+            <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab" onclick="loadFiles('/')">File Manager</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="startup-tab" data-bs-toggle="tab" data-bs-target="#startup" type="button" role="tab" onclick="loadStartup()">Startup Settings</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" onclick="loadActivity()">Activity Logs</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- DASHBOARD TAB -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="box text-center">
+                            <h3>Server Status: <span id="status-text" class="text-uppercase">Loading...</span></h3>
+                            <p class="fs-5 mt-3">💻 <strong>CPU:</strong> <span id="cpu-val">0</span> % | 💾 <strong>RAM:</strong> <span id="ram-val">0</span> MB</p>
+                            <div class="mt-4">
+                                <a href="/power/start" class="btn btn-success">Start</a>
+                                <a href="/power/restart" class="btn btn-warning">Restart</a>
+                                <a href="/power/stop" class="btn btn-danger">Stop</a>
+                            </div>
+                        </div>
+                        <div class="box mt-3">
+                            <h3>⚡ Quick Command</h3>
+                            <p class="text-muted">Send commands directly to the server terminal.</p>
+                            <div class="d-flex">
+                                <input type="text" id="cmd-input" class="form-control" placeholder="e.g. say Hello!">
+                                <button onclick="sendCommand()" class="btn btn-primary ms-2">Send</button>
+                            </div>
+                            <p id="cmd-response" class="mt-2 fw-bold"></p>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <!-- Terminal Box -->
+                        <div class="box" style="padding: 10px; background: #222;">
+                            <h4 class="mb-2 text-white">🖥️ Live Console</h4>
+                            <div id="terminal" style="background: #1e1e1e; color: #00ff00; height: 350px; overflow-y: auto; padding: 15px; text-align: left; font-family: monospace; border-radius: 8px; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">
+                                Loading console...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILE MANAGER TAB -->
+            <div class="tab-pane fade" id="files" role="tabpanel">
+                <div class="box">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h4 id="current-dir">/</h4>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="createFolder()">+ Folder</button>
+                            <button class="btn btn-secondary btn-sm" onclick="loadFiles(currentDir)">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive file-list">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="file-tbody">
+                                <tr><td colspan="3">Loading files...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- File Editor Section -->
+                    <div id="file-editor" style="display: none; margin-top: 20px;">
+                        <h5>Editing: <span id="editing-file-name"></span></h5>
+                        <textarea id="file-content" class="form-control" rows="10" style="font-family: monospace;"></textarea>
+                        <button class="btn btn-primary mt-2" onclick="saveFile()">Save File</button>
+                        <button class="btn btn-secondary mt-2" onclick="document.getElementById('file-editor').style.display='none'">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STARTUP SETTINGS TAB -->
+            <div class="tab-pane fade" id="startup" role="tabpanel">
+                <div class="box">
+                    <h4>Startup Variables</h4>
+                    <p class="text-muted">Modify environment variables like Server Version, JAR name, etc.</p>
+                    <div id="startup-vars">
+                        Loading variables...
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVITY LOGS TAB -->
+            <div class="tab-pane fade" id="activity" role="tabpanel">
+                <div class="box">
+                    <h4>Recent Activity</h4>
+                    <table class="table table-sm table-striped mt-3">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date/Time</th>
+                                <th>Event</th>
+                                <th>User/IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-tbody">
+                            <tr><td colspan="3">Loading activity...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS & App JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- DASHBOARD LOGIC ---
+        setInterval(function() {
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "unauthorized") return;
+                    let st = document.getElementById('status-text');
+                    st.innerText = data.status;
+                    st.className = 'text-uppercase ';
+                    if(data.status === 'running') st.classList.add('status-running');
+                    else if(data.status === 'offline') st.classList.add('status-offline');
+                    else st.classList.add('status-starting');
+                    
+                    document.getElementById('cpu-val').innerText = data.cpu;
+                    document.getElementById('ram-val').innerText = data.ram;
+                });
+        }, 3000);
+
+        // --- CONSOLE FETCHER LOGIC ---
+        let lastLogContent = "";
+        setInterval(function() {
+            fetch('/api/logs')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) return;
+                    let logs = data.logs;
+                    let currentContent = logs.join('<br>');
+                    // Jodi notun log ashe tobei update kora hobe
+                    if (currentContent !== lastLogContent) {
+                        let term = document.getElementById('terminal');
+                        term.innerHTML = currentContent;
+                        term.scrollTop = term.scrollHeight; // Scroll to bottom
+                        lastLogContent = currentContent;
+                    }
+                })
+                .catch(err => console.log('Error fetching logs', err));
+        }, 1500);
+
+        function sendCommand() {
+            let input = document.getElementById('cmd-input');
+            let res = document.getElementById('cmd-response');
+            if(!input.value) return;
+            
+            res.innerText = "Sending..."; res.style.color = "orange";
+            fetch('/api/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: input.value})
+            }).then(r => r.json()).then(d => {
+                if(d.success) { res.innerText = "✅ Sent!"; res.style.color = "green"; input.value = ''; }
+                else { res.innerText = "❌ Error: " + d.error; res.style.color = "red"; }
+            });
+        }
+
+        // --- FILE MANAGER LOGIC ---
+        let currentDir = '/';
+        let currentEditFile = '';
+
+        function loadFiles(dir) {
+            currentDir = dir;
+            document.getElementById('current-dir').innerText = dir;
+            let tbody = document.getElementById('file-tbody');
+            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            
+            fetch('/api/files/list?dir=' + encodeURIComponent(dir))
+                .then(res => res.json())
+                .then(data => {
+                    if(data.error) { tbody.innerHTML = `<tr><td colspan="3" class="text-danger">${data.error}</td></tr>`; return; }
+                    
+                    let html = '';
+                    // Back button if not in root
+                    if (dir !== '/') {
+                        let parent = dir.split('/').slice(0, -2).join('/') + '/';
+                        if(parent === '') parent = '/';
+                        html += `<tr>
+                            <td><span class="clickable fw-bold" onclick="loadFiles('${parent}')">📁 .. (Go Back)</span></td>
+                            <td>-</td><td>-</td>
+                        </tr>`;
+                    }
+                    
+                    data.data.forEach(f => {
+                        let attr = f.attributes;
+                        let isDir = attr.mimetype === 'inode/directory';
+                        let icon = isDir ? '📁' : '📄';
+                        let size = isDir ? '-' : (attr.size / 1024).toFixed(2) + ' KB';
+                        let path = dir === '/' ? `/${attr.name}` : `${dir}${attr.name}`;
+                        let pathFolder = dir === '/' ? `/${attr.name}/` : `${dir}${attr.name}/`;
+                        
+                        let nameHtml = isDir 
+                            ? `<span class="clickable fw-bold" onclick="loadFiles('${pathFolder}')">${icon} ${attr.name}</span>`
+                            : `<span class="clickable" onclick="editFile('${path}')">${icon} ${attr.name}</span>`;
+                            
+                        html += `<tr>
+                            <td>${nameHtml}</td>
+                            <td>${size}</td>
+                            <td>
+                                ${!isDir ? `<button class="btn btn-sm btn-primary py-0" onclick="editFile('${path}')">Edit</button>` : ''}
+                                <button class="btn btn-sm btn-danger py-0" onclick="deleteFile('${attr.name}')">Del</button>
+                            </td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+
+        function createFolder() {
+            let name = prompt("Enter new folder name:");
+            if(!name) return;
+            fetch('/api/files/action', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: 'create-folder', root: currentDir, name: name})
+            }).then(() => loadFiles(currentDir));
+        }
+
+        function deleteFile(name) {
+            if(!confirm(`Delete ${name}?`)) return;
+            fetch('/api/files/action', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: 'delete', root: currentDir, files: [name]})
+            }).then(() => loadFiles(currentDir));
+        }
+
+        function editFile(path) {
+            currentEditFile = path;
+            document.getElementById('editing-file-name').innerText = path;
+            document.getElementById('file-content').value = "Loading content...";
+            document.getElementById('file-editor').style.display = 'block';
+            
+            fetch('/api/files/content?file=' + encodeURIComponent(path))
+                .then(res => res.text())
+                .then(text => {
+                    document.getElementById('file-content').value = text;
+                });
+        }
+
+        function saveFile() {
+            let content = document.getElementById('file-content').value;
+            fetch('/api/files/content?file=' + encodeURIComponent(currentEditFile), {
+                method: 'POST',
+                body: content
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
+                    alert("File saved successfully!");
+                    document.getElementById('file-editor').style.display = 'none';
+                } else {
+                    alert("Error saving file.");
+                }
+            });
+        }
+
+        // --- STARTUP SETTINGS LOGIC ---
+        function loadStartup() {
+            let container = document.getElementById('startup-vars');
+            container.innerHTML = "Loading...";
+            fetch('/api/startup')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.error) { container.innerHTML = `<span class="text-danger">${data.error}</span>`; return; }
+                    let html = '';
+                    data.data.forEach(v => {
+                        let attr = v.attributes;
+                        html += `
+                        <div class="mb-3 border-bottom pb-2">
+                            <label class="form-label fw-bold">${attr.name} <small class="text-muted">(${attr.env_variable})</small></label>
+                            <p class="small text-muted mb-1">${attr.description}</p>
+                            <div class="d-flex">
+                                <input type="text" class="form-control" id="var-${attr.env_variable}" value="${attr.server_value}">
+                                <button class="btn btn-primary ms-2" onclick="updateVar('${attr.env_variable}')">Save</button>
+                            </div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                });
+        }
+
+        function updateVar(key) {
+            let val = document.getElementById('var-' + key).value;
+            fetch('/api/startup', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({key: key, value: val})
+            }).then(res => res.json()).then(d => {
+                if(d.success) alert("Variable updated!");
+                else alert("Error: " + d.error);
+            });
+        }
+
+        // --- ACTIVITY LOGS LOGIC ---
+        function loadActivity() {
+            let tbody = document.getElementById('activity-tbody');
+            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            fetch('/api/activity')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.error) { tbody.innerHTML = `<tr><td colspan="3" class="text-danger">${data.error}</td></tr>`; return; }
+                    let html = '';
+                    data.data.slice(0, 50).forEach(log => {
+                        let attr = log.attributes;
+                        let date = new Date(attr.timestamp).toLocaleString();
+                        html += `<tr>
+                            <td>${date}</td>
+                            <td><strong>${attr.event}</strong></td>
+                            <td>${attr.ip}</td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+    </script>
+</body>
+</html>

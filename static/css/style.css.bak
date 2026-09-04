@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+    --bg-base: #09090b; /* Very dark zinc */
+    --bg-surface: #18181b; /* Dark zinc for cards */
+    --bg-surface-hover: #27272a;
+    --purple-primary: #a855f7;
+    --purple-glow: rgba(168, 85, 247, 0.4);
+    --purple-bg: rgba(168, 85, 247, 0.1);
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --border-color: rgba(255, 255, 255, 0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Outfit', sans-serif; background-color: var(--bg-base); color: var(--text-primary); overflow: hidden; height: 100vh; display: flex; }
+
+/* Layout Structure */
+.app-layout { display: flex; width: 100vw; height: 100vh; }
+
+/* Thin Sidebar */
+.app-sidebar { width: 80px; background-color: var(--bg-base); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 50; }
+.sidebar-logo { width: 48px; height: 48px; border-radius: 16px; background: var(--purple-primary); display: flex; justify-content: center; align-items: center; font-size: 22px; color: #fff; box-shadow: 0 0 25px var(--purple-glow); margin-bottom: 25px; }
+
+.nav-item { width: 48px; height: 48px; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: var(--text-secondary); text-decoration: none; font-size: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+.nav-item:hover { background-color: var(--bg-surface-hover); color: var(--text-primary); border-radius: 10px; }
+.nav-item.active { background-color: var(--purple-primary); color: #fff; border-radius: 12px; box-shadow: 0 4px 15px var(--purple-glow); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 25%; height: 50%; width: 4px; background: var(--purple-primary); border-radius: 0 4px 4px 0; }
+
+.nav-logout { margin-top: auto; color: #ef4444; }
+.nav-logout:hover { background-color: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+/* Main Area */
+.app-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 45%); }
+.app-header { padding: 35px 45px 15px; display: flex; justify-content: space-between; align-items: center; }
+.app-header h2 { font-weight: 600; font-size: 28px; margin: 0; letter-spacing: -0.5px; }
+.user-profile { display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border-color); }
+
+.app-content { flex: 1; padding: 25px 45px 45px; overflow-y: auto; }
+
+/* Bento Grid (Dashboard) */
+.bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.bento-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 20px; padding: 25px; transition: transform 0.3s, border-color 0.3s; min-height: 140px; display: flex; flex-direction: column; justify-content: center; }
+.bento-card:hover { border-color: rgba(168, 85, 247, 0.3); }
+
+.col-span-1 { grid-column: span 1; }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+
+/* Stats */
+.stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.stat-title { color: var(--text-secondary); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 0; }
+.stat-value { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-top: auto; }
+.stat-icon { font-size: 22px; color: var(--purple-primary); filter: drop-shadow(0 0 10px var(--purple-glow)); }
+
+/* Power Controls */
+.power-group { display: flex; flex-direction: column; gap: 10px; height: 100%; justify-content: center; }
+.btn-power { flex: 1; height: 38px; border: none; border-radius: 10px; font-family: 'Outfit'; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; text-transform: uppercase; letter-spacing: 1px; }
+.btn-start { background: linear-gradient(135deg, rgba(16,185,129,0.8), rgba(5,150,105,0.9)); border: 1px solid rgba(16,185,129,0.3); }
+.btn-restart { background: linear-gradient(135deg, rgba(245,158,11,0.8), rgba(217,119,6,0.9)); border: 1px solid rgba(245,158,11,0.3); }
+.btn-stop { background: linear-gradient(135deg, rgba(239,68,68,0.8), rgba(220,38,38,0.9)); border: 1px solid rgba(239,68,68,0.3); }
+.btn-power:hover { transform: translateY(-2px); filter: brightness(1.2); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.btn-power:active { transform: translateY(1px); }
+
+/* Terminal */
+.terminal-card { padding: 0; display: flex; flex-direction: column; overflow: hidden; background: #030303; border: 1px solid #222; justify-content: flex-start; }
+.terminal-header { padding: 15px 25px; background: #0c0c0c; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+.terminal-dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+.terminal-body { padding: 20px 25px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #b48ded; height: 380px; overflow-y: auto; line-height: 1.6; }
+.terminal-input-group { display: flex; padding: 18px 25px; background: #080808; border-top: 1px solid #1a1a1a; }
+.terminal-input { flex: 1; background: transparent; border: none; color: white; font-family: 'JetBrains Mono'; outline: none; font-size: 14px; }
+
+/* Table / Lists */
+.list-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+.list-table th { text-align: left; padding: 10px 25px; color: var(--text-secondary); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.list-table td { padding: 18px 25px; background: var(--bg-surface); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); font-size: 15px; }
+.list-table td:first-child { border-left: 1px solid var(--border-color); border-radius: 18px 0 0 18px; }
+.list-table td:last-child { border-right: 1px solid var(--border-color); border-radius: 0 18px 18px 0; }
+.list-table tr { transition: transform 0.2s; }
+.list-table tr:hover td { background: var(--bg-surface-hover); border-color: rgba(168, 85, 247, 0.2); }
+.list-table tr:hover { transform: scale(1.005); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+/* Utilities & Buttons */
+.btn-action { background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+.btn-action:hover { background: var(--purple-primary); color: white; border-color: var(--purple-primary); box-shadow: 0 5px 15px var(--purple-glow); }
+.btn-action.danger:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+
+/* Login Page specific (overwrite) */
+.login-container { display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1d0f33, #09090b); }
+.login-box { background: rgba(24, 24, 27, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(168, 85, 247, 0.2); padding: 50px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 40px rgba(168, 85, 247, 0.1); width: 100%; max-width: 420px; text-align: center; }
+.login-input { width: 100%; background: #09090b; border: 1px solid var(--border-color); color: white; padding: 15px 20px; border-radius: 14px; margin-bottom: 25px; font-family: 'Outfit'; outline: none; font-size: 16px; transition: border-color 0.3s; text-align: center; }
+.login-input:focus { border-color: var(--purple-primary); }
+.login-btn { width: 100%; background: var(--purple-primary); color: white; border: none; padding: 16px; border-radius: 14px; font-family: 'Outfit'; font-size: 16px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px var(--purple-glow); }
+.login-btn:hover { background: #9333ea; transform: translateY(-2px); }
+
+
+
+/* Permanent Universal Mobile Responsive Rules */
+
+
+
+
+@media (max-width: 768px) {
+    /* 1. Universal Layout & Nav */
+    .app-sidebar { width: 100%; height: 75px; flex-direction: row; border-right: none; border-top: 1px solid var(--border-color); padding: 0 10px; position: fixed; bottom: 0; left: 0; z-index: 1000; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(10px); }
+    .sidebar-logo { display: none; }
+    .nav-logout { margin-top: 0; }
+    .nav-item { width: 45px; height: 45px; }
+    .nav-item.active::before { left: 25%; top: -14px; width: 50%; height: 3px; border-radius: 0 0 3px 3px; }
+    
+    .app-main { flex: 1; height: 100vh; }
+    .app-header { padding: 20px 20px 10px; }
+    .app-header h2 { font-size: 22px; }
+    .user-profile span { display: none; }
+    
+    /* Extra padding for fixed bottom nav */
+    .app-content { padding: 15px 15px calc(95px + env(safe-area-inset-bottom, 20px)); }
+    
+    /* 2. Grid & Cards (Fixing SS3 spacing and SS5 Terminal) */
+    .bento-grid { grid-template-columns: 1fr; gap: 15px; }
+    .col-span-1, .col-span-2, .col-span-3, .col-span-4 { grid-column: span 1 !important; }
+    
+    /* Padding !important fixes the child elements touching the wall (SS3) */
+    .bento-card { height: auto !important; min-height: fit-content; padding: 20px !important; overflow-x: auto; }
+    
+    /* Exception for Terminal (SS5) so it does not get 20px padding and break layout */
+    .terminal-card { padding: 0 !important; overflow: hidden !important; }
+    .terminal-body { height: 40vh; min-height: 250px; max-height: 350px; }
+    
+    /* 3. Power Buttons */
+    .power-group { flex-direction: row; gap: 10px; flex-wrap: wrap; }
+    .btn-power { flex: 1; min-width: 80px; height: 45px; font-size: 12px; padding: 0; }
+    
+    /* 4. Settings Layout (SS2 Save Buttons) */
+    .settings-layout { flex-direction: column !important; height: auto !important; }
+    /* Target the specific flex container holding input+button */
+    #startup-vars > div > div:last-child { flex-direction: column !important; }
+    #startup-vars input { width: 100% !important; margin-bottom: 5px; }
+    #startup-vars button { width: 100% !important; }
+    
+    /* 5. Login Slide-Up (SS1) */
+    .login-container { align-items: center !important; justify-content: center !important; height: 100dvh !important; overflow: hidden !important; padding: 20px; }
+    .login-box { margin: 0 auto; width: 100%; max-width: 340px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .login-box:focus-within { transform: translateY(-22vh); }
+    /* 6. Mobile Hiding (SS4) */
+    .hide-mobile { display: none !important; }
+    
+    /* Tables general padding fix */
+    .list-table th, .list-table td { padding: 12px 15px; font-size: 13px; white-space: nowrap; }
+    .list-table th:first-child, .list-table td:first-child { padding-left: 20px; }
+}
+
+
+
+
+

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Access - WakandaPanel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="login-container">
+    <div class="login-box">
+        <i class="fa-solid fa-bolt logo-icon"></i>
+        <h2 style="color: white; font-weight: 700; margin-bottom: 30px; font-family: 'Outfit';">System Authorization</h2>
+        
+        {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 14px;">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+        {% endif %}
+        
+        <form method="POST" onsubmit="document.querySelector('.login-btn').innerText = 'Connecting...'; document.querySelector('.login-btn').style.opacity = '0.7'; document.querySelector('.login-btn').disabled = true;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="password" name="password" class="login-input" placeholder="Enter Security PIN" required>
+            <button type="submit" class="login-btn">Initialize Connection</button>
+        </form>
+    </div>
+
+    <script>
+        if (window.visualViewport) {
+            let initialVpHeight = window.visualViewport.height;
+
+            window.visualViewport.addEventListener('resize', () => {
+                // If the screen grows back to near its original height, the keyboard closed
+                if (window.visualViewport.height >= initialVpHeight - 50) {
+                    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+                        document.activeElement.blur(); // Remove focus so the box slides down
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
