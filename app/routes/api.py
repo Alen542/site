@@ -2,18 +2,20 @@ import os
 import requests
 from flask import Blueprint, jsonify, request
 from .auth import login_required
-from ..ptero_api import api_req, console_logs, current_stats
+from ..ptero_api import api_req, console_logs, current_stats, start_ws_thread
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 @api_bp.route('/stats')
 @login_required
 def stats():
+    start_ws_thread()
     return jsonify(current_stats)
 
 @api_bp.route('/logs')
 @login_required
 def logs():
+    start_ws_thread()
     return jsonify({"logs": console_logs})
 
 @api_bp.route('/power', methods=['POST'])
