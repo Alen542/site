@@ -23,8 +23,7 @@ def create_app():
         app.register_blueprint(views_bp)
         app.register_blueprint(api_bp)
         
-        # WebSocket thread ta ekhan theke start hobe
-        from .ptero_api import start_ws_thread
-        start_ws_thread()
+        # WebSocket thread ta ekhon endpoint call er somoy start hobe (api.py)
+        # jate Gunicorn worker e properly thread toiri hoy.
         
     return app
