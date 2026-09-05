@@ -45,8 +45,8 @@ def connect_to_pterodactyl_ws():
                 
                 if event == "auth success":
                     print('WS_LOG: Auth success, requesting stats and logs...')
-                    ws.send(json.dumps({"event": "send stats", "args": []}))
-                    ws.send(json.dumps({"event": "send logs", "args": []}))
+                    ws.send(json.dumps({"event": "send stats", "args": [None]}))
+                    ws.send(json.dumps({"event": "send logs", "args": [None]}))
                 elif event in ["console output", "daemon message", "daemon error"]:
                     args = msg.get("args") or []
                     for line in args:
