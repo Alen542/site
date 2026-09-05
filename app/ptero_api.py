@@ -130,7 +130,11 @@ def api_req(method, endpoint, json_data=None, params=None):
             def json(self): return {"errors": [{"detail": "Panel connection timed out or failed"}]}
         return DummyRes()
 
+ws_started = False
 def start_ws_thread():
+    global ws_started
+    if ws_started: return
+    ws_started = True
     ws_thread = threading.Thread(target=connect_to_pterodactyl_ws, daemon=True)
     ws_thread.start()
 
